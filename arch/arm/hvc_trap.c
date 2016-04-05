@@ -34,8 +34,59 @@ int do_hvc_trap(struct core_regs *regs)
     case HSR_EC_SVC:
     case HSR_EC_SMC:
     case HSR_EC_PABT_FROM_GUEST:
+        goto trap_error;
     case HSR_EC_PABT_FROM_HYP_MODE:
+        goto trap_error;
     case HSR_EC_DABT_FROM_HYP_MODE:
+        switch (iss.pabt.ifsc) {
+        case FSR_TRANS_FAULT(1) ... FSR_TRANS_FAULT(3):
+            fipa = read_hpfar() << 8;
+            fipa |= (read_hifar() & PAGE_MASK);
+            printf("FSR_TRANS_FAULT: fipa 0x%08x\n", fipa);
+            break;
+
+        case FSR_ACCESS_FAULT(1) ... FSR_ACCESS_FAULT(3):
+            //printf("%d\n",__LINE__);
+            break;
+
+        case FSR_PERM_FAULT(1) ... FSR_PERM_FAULT(3):
+            printf("FSR_PERM_FAULT  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_SYNC_ABORT:
+            printf("FSR_SYNC_ABORT  %x\n", iss.pabt.ifsc);
+            break;
+
+
+        case FSR_ABORT_ON_TABLE_WALK(1) ... FSR_ABORT_ON_TABLE_WALK(3):
+            printf("FSR_ABORT_ON_TABLE_WALK  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_SYNC_PERORR:
+            printf("FSR_SYNC_PERORR  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_PERORR_ON_TABLE_WALK(1) ... FSR_PERORR_ON_TABLE_WALK(3):
+            printf("FSR_PERORR_ON_TABLE_WALK  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_ALINGMENT_FAULT:
+            printf("FSR_ALINGMENT_FAULT  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_DEBUG_EVENT:
+            printf("FSR_DEBUG_EVENT  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_TLB_CONFLICT:
+            printf("FSR_TLB_CONFLICT  %x\n", iss.pabt.ifsc);
+            break;
+
+        case FSR_DOMAIN_FAULT(1) ... FSR_DOMAIN_FAULT(3):
+            printf("FSR_DOMAIN_FAULT  %x\n", iss.pabt.ifsc);
+            break;
+        }
+        goto trap_error;
     case HSR_EC_HVC:
         goto trap_error;
     case HSR_EC_DABT_FROM_GUEST: {
@@ -109,7 +160,6 @@ int do_hvc_trap(struct core_regs *regs)
     }
 
     regs->pc += 4;
-
     return 0;
 
 trap_error:

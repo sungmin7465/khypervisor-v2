@@ -14,6 +14,15 @@ typedef union hsr hsr_t;
 union iss {
     uint32_t raw: 25;
     struct {
+        uint32_t ifsc: 6;
+        uint32_t reserved6: 1;
+        uint32_t s1ptw: 1;
+        uint32_t reserved8: 1;
+        uint32_t ea: 1;
+        uint32_t reserved: 15;
+    } pabt;
+
+    struct {
         uint32_t dfsc: 6;
         uint32_t wnr: 1;
         uint32_t s1ptw: 1;
