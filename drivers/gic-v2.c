@@ -288,10 +288,14 @@ void gic_inject_virq(lr_entry_t lr_entry, uint32_t slot)
     GICH_WRITE(GICH_LR(slot), (uint32_t) lr_entry.raw);
 }
 
+#include <arch/armv7.h>
+#include <core/vm.h>
 bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
 {
+    struct vmcb *vm = get_current_vm();
+
     if (!hw) {
-        pirq |= vcpuid;
+        pirq = smp_processor_id();
         pirq |= (EOI_ENABLE << 9);
     }
 
@@ -302,8 +306,10 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
         uint32_t slot = gic_find_free_slot();
 
         if (slot == VGIC_SLOT_NOTFOUND) {
+            printf("vmid %d Failed to inject %x\n", vm->vmid, lr_entry.raw);
             return false;
         } else {
+            printf("vmid %d inject now %x\n", vm->vmid, lr_entry.raw);
             gic_inject_virq(lr_entry, slot);
             return true;
         }
@@ -313,6 +319,7 @@ bool virq_inject(vcpuid_t vcpuid, uint32_t virq, uint32_t pirq, uint8_t hw)
         struct vcpu *vcpu = vcpu_find(vcpuid);
         lr_entry_t *q = vcpu->pending_irqs;
 
+        printf("vmid %d inject later %x\n", vm->vmid, lr_entry.raw);
         for (i = 0; i < VIRQ_MAX_ENTRIES; i++) {
             if (!q[i].raw) {
                 q[i] = lr_entry;

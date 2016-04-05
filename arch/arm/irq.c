@@ -26,7 +26,10 @@ hvmm_status_t do_irq(struct core_regs *regs)
     return HVMM_STATUS_SUCCESS;
 #endif
 
-    is_guest_irq(irq);
+    if (irq >= 32) {
+        is_guest_irq(irq);
+        //printf("cpu[%d] irq %d\n", smp_processor_id(), irq);
+    }
 
     if (irq_handlers[irq]) {
         irq_handlers[irq](irq, regs, 0);
