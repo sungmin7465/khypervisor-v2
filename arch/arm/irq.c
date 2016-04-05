@@ -19,6 +19,13 @@ hvmm_status_t do_irq(struct core_regs *regs)
 
     irq_hw->eoi(irq);
 
+#ifdef __CONFIG_SMP__
+    if (smp_processor_id() != 0 && smp_processor_id() != 1)
+        printf("cpu[%d] irq %d\n", smp_processor_id(), irq);
+    irq_hw->dir(irq);
+    return HVMM_STATUS_SUCCESS;
+#endif
+
     is_guest_irq(irq);
 
     if (irq_handlers[irq]) {

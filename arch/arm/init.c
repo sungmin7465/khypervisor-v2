@@ -13,6 +13,7 @@
 extern uint32_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
 
+#include <stdio.h>
 void init_system()
 {
     uint8_t cpuid = smp_processor_id();
@@ -47,6 +48,12 @@ void init_system()
         printf("wake up...other CPUs\n");
         secondary_smp_pen = 1;
 #endif
+    } else {
+        irq_init();
+        timer_hw_init(26);
+        timer_start();
+        irq_enable();
+        while(1) ;
     }
 
     enable_mmu();

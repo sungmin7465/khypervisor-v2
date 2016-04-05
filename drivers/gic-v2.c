@@ -165,11 +165,6 @@ void gic_init(void)
         GICD_WRITE(GICD_ICENABLER(i >> 5), valid);
     }
 
-#if 0
-    for (i = 0; i < GICv2.ITLinesNumber; i += 32) {
-        GICD_WRITE(GICD_IGROUPR(i >> 5), 0xFFFFFFFF);
-    }
-#endif
 
     // We set priority 0xa0 for each but real value is a 0xd0, Why?
     /* Set priority as default for all interrupts */
@@ -177,13 +172,10 @@ void gic_init(void)
         GICD_WRITE(GICD_IPRIORITYR(i >> 2), 0xa0a0a0a0);
     }
 
-#ifndef __CONFIG_SMP__
-    // NOTE: GIC_ITRAGETSR is read-only on multiprocessor environment.
+    // NOTE: GIC_ITRAGETSR[0]...[7] are read-only on multiprocessor environment.
     for (i = 32; i < GICv2.ITLinesNumber; i += 4) {
         GICD_WRITE(GICD_ITARGETSR(i >> 2), 1 << 0 | 1 << 8 | 1 << 16 | 1 << 24);
     }
-#endif
-
 
     GICC_WRITE(GICC_CTLR, GICC_CTL_ENABLE | GICC_CTL_EOI);
     GICD_WRITE(GICD_CTLR, 0x1);
