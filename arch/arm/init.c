@@ -15,6 +15,25 @@ extern addr_t __hvc_vector;
 extern addr_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
 
+// TODO(jigi.kim): Move function 'psci_cpu_on' to more proper place.
+void psci_cpu_on(unsigned long cpu_id, unsigned long entry_point)
+{
+    arm_smccc_smc(0x95c1ba60, cpu_id, entry_point, 0);
+}
+
+// TODO(jigi.kim): Move function 'boot_secondary_cpus' to more proper place.
+void boot_secondary_cpus()
+{
+    unsigned long i;
+    
+    for (i = 1; i < NR_CPUS; i++) {
+        // TODO(jigi.kim): Generalize this sequence for various methods.
+        //                 1) make configuration per methods.
+        //                 2) use 'cpu_on' function which is defined by platform.
+        psci_cpu_on(i, CFG_HYP_START_ADDRESS);
+    }
+}
+
 void init_cpu()
 {
     uint8_t cpuid = smp_processor_id();
@@ -56,6 +75,7 @@ void init_cpu()
 
 #ifdef CONFIG_SMP
     printf("wake up...other CPUs\n");
+    boot_secondary_cpus();
     secondary_smp_pen = 1;
 #endif
 

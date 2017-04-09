@@ -1,0 +1,7 @@
+#!/bin/bash
+
+make clean
+
+if make -j8; then
+    sudo cp build/khypervisor-bananapi.bin /var/lib/tftpboot/khypervisor.bin
+fi
