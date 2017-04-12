@@ -15,21 +15,21 @@ extern addr_t __hvc_vector;
 extern addr_t __HYP_PGTABLE;
 uint8_t secondary_smp_pen;
 
-// TODO(jigi.kim): Move function 'psci_cpu_on' to more proper place.
+// TODO(jigi.kim): Move function 'psci_cpu_on' to more proper place
 void psci_cpu_on(unsigned long cpu_id, unsigned long entry_point)
 {
     arm_smccc_smc(0x95c1ba60, cpu_id, entry_point, 0);
 }
 
-// TODO(jigi.kim): Move function 'boot_secondary_cpus' to more proper place.
+// TODO(jigi.kim): Move function 'boot_secondary_cpus' to more proper place
 void boot_secondary_cpus()
 {
     unsigned long i;
     
     for (i = 1; i < NR_CPUS; i++) {
-        // TODO(jigi.kim): Generalize this sequence for various methods.
-        //                 1) make configuration per methods.
-        //                 2) use 'cpu_on' function which is defined by platform.
+        // TODO(jigi.kim): Generalize this sequence for various methods
+        //                 1) make configuration per methods
+        //                 2) use 'cpu_on' function which is defined by platform
         psci_cpu_on(i, CFG_HYP_START_ADDRESS);
     }
 }
@@ -38,7 +38,7 @@ void init_cpu()
 {
     uint8_t cpuid = smp_processor_id();
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
-    uint32_t hsctlr;
+    uint32_t hsctlr, hcr;
 
     // For console debugging.
     console_init();
@@ -65,6 +65,10 @@ void init_cpu()
     hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
     write_cp32(hsctlr, HSCTLR);
 
+    hcr = read_cp32(HCR);
+    hcr |= HCR_BIT(TSC);
+    write_cp32(hcr, HCR);
+
     irq_init();
 
     dev_init(); /* we don't have */
@@ -88,7 +92,7 @@ void init_secondary_cpus()
 {
     uint8_t cpuid = smp_processor_id();
     addr_t pgtable = (uint32_t) &__HYP_PGTABLE;
-    uint32_t hsctlr;
+    uint32_t hsctlr, hcr;
 
     write_cp32((uint32_t) &__hvc_vector, HVBAR);
     assert(read_cp32(HVBAR) == (uint32_t) &__hvc_vector);
@@ -103,6 +107,10 @@ void init_secondary_cpus()
     hsctlr = read_cp32(HSCTLR);
     hsctlr |= HSCTLR_BIT(M) | HSCTLR_BIT(A) | HSCTLR_BIT(C) | HSCTLR_BIT(I);
     write_cp32(hsctlr, HSCTLR);
+
+    hcr = read_cp32(HCR);
+    hcr |= HCR_BIT(TSC);
+    write_cp32(hcr, HCR);
 
     irq_init();
 
