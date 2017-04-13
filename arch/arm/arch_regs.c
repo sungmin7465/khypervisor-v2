@@ -35,7 +35,7 @@ static void init_cp15(struct cp15 *cp15)
      * so this value have to determined by situation.
      * ex) linux guest's secondary vcpu, bm guest vcpu .. etc.
      */
-    cp15->vmpidr |= 0;
+//    cp15->vmpidr |= 0;
 }
 
 static void save_banked_regs(struct banked_regs *banked_regs)

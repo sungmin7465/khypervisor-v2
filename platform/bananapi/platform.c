@@ -27,7 +27,8 @@ void platform_init()
     // add mapping for serial devices
     paging_add_mapping(0x01c28000, 0x01c28000, MT_DEVICE, SZ_1K);
 
-    paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
+    paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITETHROUGH_RW_ALLOC, SZ_128M);
+//    paging_add_mapping(CFG_HYP_START_ADDRESS, CFG_HYP_START_ADDRESS, MT_WRITEBACK_RW_ALLOC, SZ_128M);
 }
 
 void console_init()

@@ -14,15 +14,8 @@ static irq_handler_t irq_handlers[MAX_IRQS];
 
 hvmm_status_t do_irq(struct core_regs *regs)
 {
-    uint32_t pcpu = smp_processor_id();
     uint32_t irq = irq_hw->ack();
-    uint32_t cpuid = (irq >> 10) & 0x7;
-    irq &= 0x3FF;
 
-    if (pcpu == 1)
-        printf("CPU[%d] IRQ[%d]\n", pcpu, irq);
-    if (irq < 16)
-        printf("cpuid: %d\n", cpuid);
     irq_hw->eoi(irq);
 
     if (irq_handlers[irq](irq, regs, 0) != VM_IRQ) {
