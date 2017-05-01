@@ -72,17 +72,19 @@ int do_hyp_trap(struct core_regs *regs)
 
         struct vmcb *vm = get_current_vm();
         int id = regs->gpr[1];
+
+        if (id >= vm->num_vcpus) {
+            regs->gpr[0] = -8;
+            ret = 0;
+            break;
+        }
+
         struct vcpu *vcpu = vm->vcpu[id];
 
         vcpu->regs.core_regs.pc = regs->gpr[2];
         regs->gpr[0] = 0;
 
-//        struct arm_smccc_res *reg;
-//        reg = (struct arm_smccc_res *) (* (void **) (regs->gpr[12]-4));
-//        reg->a0 = 0;
-
         sched_vcpu_attach(vcpu->vcpuid, schedconf_g_vcpu_to_pcpu_map[vcpu->vcpuid]);
-//        sched_vcpu_attach(vcpu->vcpuid, 1);
         printf("sched_vcpu_register, vcpuid : %d is attatched on pcpuid : %d\n", vcpu->vcpuid, vcpu->pcpuid);
         vcpu->state = VCPU_ACTIVATED;
 
