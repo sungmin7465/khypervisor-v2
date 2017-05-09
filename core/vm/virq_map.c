@@ -79,6 +79,9 @@ static irqreturn_t is_guest_spi(int irq, void *pregs, void *pdata)
     uint32_t virq;
     struct list_head *vm_list = get_all_vms();
 
+    if (irq != 33 && irq != 39 && irq != 52 && irq != 1023)
+        printf("irq occured : %d\n", irq);
+
     list_for_each_entry(struct vmcb, vm, vm_list, head) {
         vcpu = vm->vcpu[0];
         virq = pirq_to_virq(vcpu, irq);
